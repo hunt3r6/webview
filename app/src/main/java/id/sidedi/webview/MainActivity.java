@@ -1,11 +1,10 @@
 package id.sidedi.webview;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -37,18 +36,29 @@ public class MainActivity extends AppCompatActivity {
         binding.webView.setWebViewClient(new WebViewClient() {
 
             @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (url.startsWith("whatsapp://")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                    binding.webView.goBack();
+                }
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+
+                return false;
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 binding.webView.loadUrl("javascript:(function() { " +
                         "document.getElementsByClassName('btn-share-top')[0].setAttribute('href', 'https://api.whatsapp.com/send?text=http://natural-diamond.club/front/DW16-30');" +
                         "})()"
                 );
 
-                if (url.startsWith("whatsapp://")) {
-                    view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                }
 
             }
         });
